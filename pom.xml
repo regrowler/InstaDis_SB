@@ -8,8 +8,8 @@
         <version>2.1.9.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.ikosmov</groupId>
-    <artifactId>hw</artifactId>
+    <groupId>com.netcracker</groupId>
+    <artifactId>instadis</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>hw</name>
     <description>Demo project for Spring Boot</description>
