@@ -5,6 +5,7 @@ import com.netcracker.instadis.dao.repos.PostRepositoryImpl;
 import com.netcracker.instadis.model.Post;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
+@ControllerAdvice
 @RestController
 @RequestMapping("posts")
 public class PostController {
@@ -31,11 +33,13 @@ public class PostController {
     }
 
     @GetMapping("{id}")
+    @ResponseStatus(HttpStatus.NOT_FOUND)  // 404
     public Post getOne(@PathVariable Integer id) {
-        return postRepositoryImpl.findOne(id);
+        Post post = postRepositoryImpl.findOne(id);
+        return post;
     }
 
-    @PostMapping("/create_post")
+    @PostMapping
     public String createPost(
             @RequestParam String title,
             @RequestParam("file") MultipartFile file
@@ -47,24 +51,25 @@ public class PostController {
             String encodedImage = encodeFileToBase64Binary((File) file);
             post.setImage(encodedImage);
             } catch (Exception e) {
-                return "Вам не удалось загрузить файл" + " => " + e.getMessage();
+                return "You were unable to upload the file: " + " => " + e.getMessage();
             }
         } else {
-            return "Вам не удалось загрузить, потому что файл пустой.";
+            return "You were unable to load: file is empty.";
         }
         postRepositoryImpl.createPost(post);
-        return "success";
+        return "Success";
     }
 
-    @PostMapping("/delete_post")
+    @DeleteMapping
     public String deletePost(@RequestParam Integer id){
         postRepositoryImpl.deletePost(id);
         return "success";
     }
 
-    @PostMapping("/update_post")
+    @PutMapping
     public String updatePost(@RequestParam Integer id, @RequestParam String title, @RequestParam("file") MultipartFile file){
         Post post = new Post();
+        int resultPost = 0;
         post.setTitle(title);
         post.setId(id);
         if (!file.isEmpty()) {
@@ -72,13 +77,13 @@ public class PostController {
                 String encodedImage = encodeFileToBase64Binary((File) file);
                 post.setImage(encodedImage);
             } catch (Exception e) {
-                return "Вам не удалось загрузить файл" + " => " + e.getMessage();
+                return "You were unable to upload the file: " + " => " + e.getMessage();
             }
         } else {
-            return "Вам не удалось загрузить, потому что файл пустой.";
+            return "You were unable to load: file is empty.";
         }
 
-        postRepositoryImpl.updatePost(post);
+        resultPost = postRepositoryImpl.updatePost(post);
         return "success";
     }
 
