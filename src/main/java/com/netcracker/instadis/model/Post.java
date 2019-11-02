@@ -5,11 +5,13 @@ public class Post {
     private long id;
     private String title;
     private String image;
+    private String timestamp_creation;
 
-    public Post(long id, String title, String image) {
+    public Post(long id, String title, String image, String timestamp_creation) {
         this.id = id;
         this.title = title;
         this.image = image;
+        this.timestamp_creation = timestamp_creation;
     }
 
     public Post() {
@@ -40,12 +42,21 @@ public class Post {
         this.image = image;
     }
 
+    public String getTimestamp_creation() {
+        return timestamp_creation;
+    }
+
+    public void setTimestamp_creation(String timestamp_creation) {
+        this.timestamp_creation = timestamp_creation;
+    }
+
     @Override
     public String toString() {
         return "Post{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", image='" + image + '\'' +
+                ", timestamp_creation=" + timestamp_creation +
                 '}';
     }
 }
