@@ -2,23 +2,19 @@ package com.netcracker.instadis.dao;
 
 import com.netcracker.instadis.model.Post;
 import com.netcracker.instadis.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Optional;
 
-public interface UserRepository {
-    public RowMapper<User> ROW_MAPPER = (ResultSet resultSet, int rowNum) -> {
-        return new User(resultSet.getInt("id"), resultSet.getString("name"), resultSet.getString("password"));
-    };
+@Repository
+public interface UserRepository extends JpaRepository<User,Long> {
 
-    public List<User> findAll();
-
-    public User findOne(Integer id);
-
-    public void createUser(User post);
-
-    public void deleteUser(Integer id);
-
-    public void updateUser(User post);
+    List<User> findAll();
+    void deleteById(Long id);
+    Optional<User> findById(Integer id);
+    Optional<User> findByName(String name);
 }
