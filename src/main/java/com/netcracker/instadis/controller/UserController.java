@@ -1,64 +1,101 @@
 package com.netcracker.instadis.controller;
 
-import com.netcracker.instadis.dao.repos.UserRepositoryImpl;
+import com.netcracker.instadis.dao.UserRepository;
 import com.netcracker.instadis.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("auth")
 public class UserController {
-    private final UserRepositoryImpl userRepository;
-
     @Autowired
-    public UserController(UserRepositoryImpl userRepository) {
-        this.userRepository = userRepository;
-    }
+    private UserRepository userRepository;
 
+    //for tests only
     @GetMapping
-    public List<User> list() {
+    public List<User> list(HttpServletResponse response) {
         return userRepository.findAll();
     }
 
     @GetMapping("{id}")
-    public User getOne(@PathVariable Integer id, @RequestParam String pass) {
-        User user = userRepository.findOne(id);
-        return user.getPassword().equals(pass) ? user : null;
+    public void getOne(HttpServletResponse response, @PathVariable Long id, @RequestHeader String pass) {
+        isUserRegistered(response, id, pass);
     }
 
-    @PostMapping("/sign_up")
-    public String createUser(
-            @RequestParam String name,
-            @RequestParam String pass
-    ) {
-        User user = new User();
-        user.setName(name);
-        user.setPassword(pass);
-        userRepository.createUser(user);
-        return "success";
-    }
-
-    @PostMapping("/delete_user")
-    public String deleteUser(@RequestParam Integer id) {
-        userRepository.deleteUser(id);
-        return "success";
-    }
-
-    @PostMapping("/update_user")
-    public String updateUser(@RequestParam Integer id, @RequestParam String name, @RequestParam String pass) {
-        User user = userRepository.findOne(id);
-        if (user.getPassword().equals(pass)) {
-            User user1 = new User();
-            user1.setId(id);
-            user1.setName(name);
-            user1.setPassword(pass);
-            userRepository.updateUser(user1);
-            return "success";
+    @PostMapping()
+    public void createUser(HttpServletResponse response,
+                             @RequestHeader String name,
+                             @RequestHeader String pass) {
+        if (!isUserRegistered(response, name)) {
+            User user = new User();
+            user.setName(name);
+            user.setPassword(pass);
+            userRepository.save(user);
+            response.setStatus(200);
+        }else {
+            response.setStatus(403);
         }
-        return "fail";
     }
 
+    @DeleteMapping("{id}")
+    public void deleteUser(HttpServletResponse response,
+                           @PathVariable Long id,
+                           @RequestHeader String pass) {
+        if (isUserRegistered(response, id, pass)) {
+            userRepository.deleteById(id);
+        }
+        return;
+    }
 
+    @PatchMapping("{id}")
+    public void updateUser(HttpServletResponse response,
+                           @PathVariable Long id,
+                           @RequestHeader String name,
+                           @RequestHeader String oldpass,
+                           @RequestHeader String pass) {
+        if (isUserRegistered(response, id, oldpass)) {
+            User user = userRepository.findById(id).get();
+            user.setId(id);
+            user.setName(name);
+            user.setPassword(pass);
+            user.updateVersion();
+            userRepository.save(user);
+            response.setStatus(200);
+            return;
+        }
+        return;
+    }
+
+    boolean isUserRegistered(HttpServletResponse response,
+                             @RequestHeader String name) {
+        Optional<User> user = userRepository.findByName(name);
+        if (user.isPresent()) {
+            response.setStatus(200);
+        } else {
+            response.setStatus(404);
+        }
+        return user.isPresent();
+    }
+
+    boolean isUserRegistered(HttpServletResponse response,
+                             @RequestHeader Long id,
+                             @RequestHeader String pass) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isPresent()) {
+            if (user.get().getPassword().equals(pass)) {
+                response.setStatus(200);
+                return true;
+            } else {
+                response.setStatus(401);
+                return false;
+            }
+        } else {
+            response.setStatus(404);
+            return false;
+        }
+    }
 }

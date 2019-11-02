@@ -1,13 +1,25 @@
 package com.netcracker.instadis.model;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Version;
+
+@Entity
 public class User {
 
+    @Id
     private long id;
     private String name;
     private String password;
+    @Version
+    @Column(name = "VERSION")
+    private long version;
 
     public User() { }
-
+    public long updateVersion(){
+        return ++version;
+    }
     public User(long id, String name, String password) {
         this.id = id;
         this.name = name;
