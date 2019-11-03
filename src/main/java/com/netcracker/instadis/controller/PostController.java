@@ -85,7 +85,6 @@ public class PostController {
         return;
     }
 
-
     private static String encodeFileToBase64Binary(File file){
         String encodedfile = null;
         try {
