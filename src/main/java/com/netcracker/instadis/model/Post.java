@@ -1,7 +1,12 @@
 package com.netcracker.instadis.model;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
+@Entity
 public class Post {
+
+    @Id
     private long id;
     private String title;
     private String image;
@@ -49,14 +54,5 @@ public class Post {
     public void setTimestamp_creation(String timestamp_creation) {
         this.timestamp_creation = timestamp_creation;
     }
-
-    @Override
-    public String toString() {
-        return "Post{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", image='" + image + '\'' +
-                ", timestamp_creation=" + timestamp_creation +
-                '}';
-    }
+    
 }
