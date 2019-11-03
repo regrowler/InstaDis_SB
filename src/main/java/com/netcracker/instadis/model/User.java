@@ -10,7 +10,7 @@ public class User {
 
     @Id
     private long id;
-    private String name;
+    private String login;
     private String password;
     @Version
     @Column(name = "VERSION")
@@ -20,9 +20,9 @@ public class User {
     public long updateVersion(){
         return ++version;
     }
-    public User(long id, String name, String password) {
+    public User(long id, String login, String password) {
         this.id = id;
-        this.name = name;
+        this.login = login;
         this.password = password;
     }
 
@@ -34,12 +34,12 @@ public class User {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getLogin() {
+        return login;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setLogin(String login) {
+        this.login = login;
     }
 
     public String getPassword() {

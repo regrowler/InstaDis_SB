@@ -28,11 +28,11 @@ public class UserController {
 
     @PostMapping()
     public void createUser(HttpServletResponse response,
-                             @RequestHeader String name,
+                             @RequestHeader String login,
                              @RequestHeader String pass) {
-        if (!isUserRegistered(response, name)) {
+        if (!isUserRegistered(response, login)) {
             User user = new User();
-            user.setName(name);
+            user.setLogin(login);
             user.setPassword(pass);
             userRepository.save(user);
             response.setStatus(200);
@@ -54,13 +54,13 @@ public class UserController {
     @PatchMapping("{id}")
     public void updateUser(HttpServletResponse response,
                            @PathVariable Long id,
-                           @RequestHeader String name,
+                           @RequestHeader String login,
                            @RequestHeader String oldpass,
                            @RequestHeader String pass) {
         if (isUserRegistered(response, id, oldpass)) {
             User user = userRepository.findById(id).get();
             user.setId(id);
-            user.setName(name);
+            user.setLogin(login);
             user.setPassword(pass);
             user.updateVersion();
             userRepository.save(user);
@@ -71,8 +71,8 @@ public class UserController {
     }
 
     boolean isUserRegistered(HttpServletResponse response,
-                             @RequestHeader String name) {
-        Optional<User> user = userRepository.findByName(name);
+                             @RequestHeader String login) {
+        Optional<User> user = userRepository.findByLogin(login);
         if (user.isPresent()) {
             response.setStatus(200);
         } else {
