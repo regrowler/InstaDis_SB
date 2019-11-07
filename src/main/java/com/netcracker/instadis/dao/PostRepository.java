@@ -1,24 +1,18 @@
 package com.netcracker.instadis.dao;
 
 import com.netcracker.instadis.model.Post;
-import org.springframework.jdbc.core.RowMapper;
-import java.sql.ResultSet;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
+import java.util.Optional;
 
-public interface PostRepository {
+@Repository
+public interface PostRepository extends JpaRepository<Post,Long> {
 
-    public RowMapper<Post> ROW_MAPPER = (ResultSet resultSet, int rowNum) ->  {
-            return new Post(resultSet.getInt("id"), resultSet.getString("title"), resultSet.getString("image"), resultSet.getString("timestamp_creation"));
-    };
-
-    public List<Post> findAll();
-
-    public Post findOne(Integer id);
-
-    public Post createPost(Post post);
-
-    public int deletePost(Integer id);
-
-    public int updatePost(Post post);
-
+    List<Post> findAll();
+    void deleteById(Long id);
+    Optional<Post> findById(Integer id);
+    void save(Post post);
 }
+
