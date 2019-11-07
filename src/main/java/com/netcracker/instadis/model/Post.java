@@ -1,26 +1,30 @@
 package com.netcracker.instadis.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+
+import javax.persistence.*;
 
 @Entity
 public class Post {
 
     @Id
+    @GeneratedValue
     private long id;
     private String title;
     private String image;
     private String timestamp_creation;
 
-    public Post(long id, String title, String image, String timestamp_creation) {
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private User user;
+
+    public Post(long id, String title, String image, String timestamp_creation, User user) {
         this.id = id;
+        this.user = user;
         this.title = title;
         this.image = image;
         this.timestamp_creation = timestamp_creation;
     }
 
     public Post() {
-
     }
 
     public long getId() {
@@ -54,5 +58,9 @@ public class Post {
     public void setTimestamp_creation(String timestamp_creation) {
         this.timestamp_creation = timestamp_creation;
     }
+
+    public User getUser() { return user; }
+
+    public void setUser(User user) { this.user = user; }
     
 }

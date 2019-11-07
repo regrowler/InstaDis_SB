@@ -1,27 +1,31 @@
 package com.netcracker.instadis.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Version;
+import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 public class User {
 
     @Id
+    @GeneratedValue
     private long id;
+
+    @Column(unique = true)
     private String login;
     private String password;
     @Version
     @Column(name = "VERSION")
     private long version;
 
-    public User() { }
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Post> posts;
+
+    public User() {
+    }
     public long updateVersion(){
         return ++version;
     }
-    public User(long id, String login, String password) {
-        this.id = id;
+    public User(String login, String password) {
         this.login = login;
         this.password = password;
     }
@@ -49,4 +53,10 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public Set<Post> getPosts() { return posts; }
+
+    public void setPosts(Set<Post> posts) { this.posts = posts; }
+
+    public void addPost(Post post) { this.posts.add(post);}
 }
