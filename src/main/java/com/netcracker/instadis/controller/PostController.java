@@ -4,6 +4,7 @@ package com.netcracker.instadis.controller;
 import com.netcracker.instadis.dao.PostRepository;
 import com.netcracker.instadis.model.Post;
 import com.netcracker.instadis.model.User;
+import com.netcracker.instadis.requestBodies.createPostForUserRequestBody;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,26 +28,26 @@ public class PostController {
     @GetMapping
     public List<Post> list() {
         return postRepository.findAll();
-
     }
 
     @GetMapping("{id}")
     @ResponseStatus(HttpStatus.NOT_FOUND)  // 404
-    public Optional<Post> getOne(@PathVariable Integer id) {
+    public Optional<Post> getPostByID(@PathVariable Long id) {
         return postRepository.findById(id);
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/new")
+    @RequestMapping(method = RequestMethod.POST)
     public void createPost(HttpServletResponse response,
-                           @RequestParam User user,
-                           @RequestParam String title,
-                           @RequestParam("file") MultipartFile file
+                           @RequestBody createPostForUserRequestBody body
     ) {
         Post post = new Post();
-        post.setTitle(title);
-        post.setUser(user);
-        handlePost(response,post,file);
+        post.setTitle(body.getTitle());
+        post.setUser(body.getUser());
+        post.setDescription(body.getDescription());
+        handlePost(response,post,body.getFile());
     }
+
+
 
     @DeleteMapping
     public void deletePost(HttpServletResponse response,
@@ -91,14 +92,15 @@ public class PostController {
             try {
                 String encodedImage = encodeFileToBase64Binary((File) file);
                 post.setImage(encodedImage);
+                postRepository.save(post);
+                response.setStatus(200);
             } catch (Exception e) {
+                System.out.println("this is number 500 because of catch");
                 response.setStatus(500);
             }
         } else {
+            System.out.println("this is number 500 because of file");
             response.setStatus(500);
         }
-        postRepository.save(post);
-        response.setStatus(200);
     }
-
 }

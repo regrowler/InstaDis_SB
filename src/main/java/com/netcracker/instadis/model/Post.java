@@ -12,6 +12,7 @@ public class Post {
     private String title;
     private String image;
     private String timestamp_creation;
+    private String description;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private User user;
@@ -62,5 +63,9 @@ public class Post {
     public User getUser() { return user; }
 
     public void setUser(User user) { this.user = user; }
+
+    public String getDescription() { return description; }
+
+    public void setDescription(String description) { this.description = description; }
     
 }
