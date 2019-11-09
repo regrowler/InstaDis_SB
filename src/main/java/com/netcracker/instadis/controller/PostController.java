@@ -44,7 +44,10 @@ public class PostController {
         post.setTitle(body.getTitle());
         post.setUser(body.getUser());
         post.setDescription(body.getDescription());
-        handlePost(response,post,body.getFile());
+        post.setImage(body.getFile());
+        post.setTimestamp_creation("");
+        postRepository.save(post);
+        response.setStatus(200);
     }
 
 
@@ -56,6 +59,7 @@ public class PostController {
         postRepository.deleteById(id);
     }
 
+    //todo: izmenit zapros
     @PutMapping
     public void updatePost(HttpServletResponse response,
                            @RequestParam Long id,
@@ -85,9 +89,10 @@ public class PostController {
     }
 
     private void handlePost(HttpServletResponse response,
-                            @RequestParam Post post,
-                            @RequestParam MultipartFile file
+                            Post post,
+                            MultipartFile file
     ) {
+        System.out.println(file.getName());
         if (!file.isEmpty()) {
             try {
                 String encodedImage = encodeFileToBase64Binary((File) file);

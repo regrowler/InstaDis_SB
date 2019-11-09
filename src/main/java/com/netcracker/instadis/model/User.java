@@ -1,13 +1,15 @@
 package com.netcracker.instadis.model;
 
 import javax.persistence.*;
+import java.util.Collections;
 import java.util.Set;
 
 @Entity
 public class User {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "USER_ID")
     private long id;
 
     @Column(unique = true)
@@ -17,7 +19,7 @@ public class User {
     @Column(name = "VERSION")
     private long version;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.REFRESH, CascadeType.REMOVE}, fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<Post> posts;
 
     public User() {
@@ -54,9 +56,19 @@ public class User {
         this.password = password;
     }
 
-    public Set<Post> getPosts() { return posts; }
+    public Set<Post> getPosts() { return Collections.unmodifiableSet(posts); }
 
     public void setPosts(Set<Post> posts) { this.posts = posts; }
 
-    public void addPost(Post post) { this.posts.add(post);}
+    public void addPost(Post post) {
+        this.posts.add(post);
+        post.setUser(this);
+    }
+
+    public void removePost(Post post){
+        if(this.posts.contains(post)){
+            this.posts.remove(post);
+            post.setUser(null);
+        }
+    }
 }
