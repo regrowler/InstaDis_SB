@@ -12,7 +12,8 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     List<Post> findAll();
     void deleteById(Long id);
-    Optional<Post> findById(Integer id);
+    Optional<Post> findById(Long id);
     Post save(Post post);
+    List<Post> findAllByUserId(Long id);
 }
 
