@@ -13,4 +13,5 @@ public class createPostForUserRequestBody {
     private User user;
     private String description;
     private String file;
+    private String date;
 }

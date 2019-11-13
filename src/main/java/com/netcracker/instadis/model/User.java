@@ -1,5 +1,7 @@
 package com.netcracker.instadis.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.Collections;
 import java.util.Set;
@@ -19,7 +21,8 @@ public class User {
     @Column(name = "VERSION")
     private long version;
 
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.REFRESH, CascadeType.REMOVE}, fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.REFRESH, CascadeType.REMOVE}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JsonIgnore
     private Set<Post> posts;
 
     public User() {

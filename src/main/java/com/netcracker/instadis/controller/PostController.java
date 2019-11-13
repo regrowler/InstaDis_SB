@@ -28,9 +28,15 @@ public class PostController {
         return postRepository.findAll();
     }
 
-    @GetMapping("{id}")
-    public List<Post> getPostByID(@PathVariable Long id) {
-        return postRepository.findAllByUserId(id);
+    @GetMapping("{login}")
+    public List<Post> getPostByID(@PathVariable String login) {
+        return postRepository.findAllByUserLogin(login);
+    }
+
+    @GetMapping("{login}/{id}")
+    public Optional<Post> getUserPostById(@PathVariable String login,
+                                          @PathVariable Long id){
+        return postRepository.findByUserLoginAndId(login,id);
     }
 
     @RequestMapping(method = RequestMethod.POST)
@@ -42,7 +48,7 @@ public class PostController {
         post.setUser(body.getUser());
         post.setDescription(body.getDescription());
         post.setImage(body.getFile());
-        post.setTimestamp_creation("");
+        post.setTimestamp_creation(body.getDate());
         postRepository.save(post);
         response.setStatus(200);
     }

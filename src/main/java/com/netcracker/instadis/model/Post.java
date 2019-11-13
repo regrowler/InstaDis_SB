@@ -21,7 +21,6 @@ public class Post {
 
     @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.REMOVE}, fetch = FetchType.EAGER)
     @JoinColumn(name = "USER_ID")
-    @JsonIgnore
     private User user;
 
     public Post(long id, String title, String image, String timestamp_creation, User user) {

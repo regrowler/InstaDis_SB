@@ -22,13 +22,15 @@ public class UserController {
         return userRepository.findAll();
     }
 
-    @GetMapping("{id}")
+
+    //todo: remove this query?
+    @GetMapping("{login}")
     public Optional<User> getOne(HttpServletResponse response,
-                                 @PathVariable Long id,
+                                 @PathVariable String login,
                                  @RequestBody String password
     ) {
-        if(isUserRegistered(response, id, password)){
-            return userRepository.findById(id);
+        if(isUserRegistered(response, login, password)){
+            return userRepository.findByLogin(login);
         }
         return Optional.empty();
     }
@@ -59,12 +61,11 @@ public class UserController {
         return userRepository.findByLogin(body.getLogin());
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping()
     public void deleteUser(HttpServletResponse response,
-                           @PathVariable Long id,
-                           @RequestBody String password) {
-        if (isUserRegistered(response, id, password)) {
-            userRepository.deleteById(id);
+                           @RequestBody loginAndPasswordRequestBody body) {
+        if (isUserRegistered(response, body.getLogin(), body.getPassword())) {
+            userRepository.deleteByLogin(body.getLogin());
         }
     }
 
@@ -85,7 +86,7 @@ public class UserController {
         }
     }
 
-    boolean isUserRegistered(HttpServletResponse response, String login) {
+    private boolean isUserRegistered(HttpServletResponse response, String login) {
         Optional<User> user = userRepository.findByLogin(login);
         if (user.isPresent()) {
             response.setStatus(200);
@@ -95,12 +96,12 @@ public class UserController {
         return user.isPresent();
     }
 
-    boolean isUserRegistered(HttpServletResponse response, Long id, String password) {
+    private boolean isUserRegistered(HttpServletResponse response, Long id, String password) {
         Optional<User> user = userRepository.findById(id);
         return isUserRegistered(response, user,password);
     }
 
-    boolean isUserRegistered(HttpServletResponse response, String login, String password) {
+    private boolean isUserRegistered(HttpServletResponse response, String login, String password) {
         Optional<User> user = userRepository.findByLogin(login);
         return isUserRegistered(response,user,password);
     }
