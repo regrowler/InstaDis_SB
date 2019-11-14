@@ -38,7 +38,7 @@ class TestPostRepository {
 
     @Test
     public void testFindById() {
-        Assert.assertNotNull(postRepository.findById(777));
+        Assert.assertNotNull(postRepository.findById((long)777));
     }
 
     @After

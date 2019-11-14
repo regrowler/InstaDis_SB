@@ -1,27 +1,36 @@
 package com.netcracker.instadis.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Version;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.persistence.*;
+import java.util.Collections;
+import java.util.Set;
 
 @Entity
 public class User {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "USER_ID")
     private long id;
+
+    @Column(unique = true)
     private String login;
     private String password;
     @Version
     @Column(name = "VERSION")
     private long version;
 
-    public User() { }
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.REFRESH, CascadeType.REMOVE}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JsonIgnore
+    private Set<Post> posts;
+
+    public User() {
+    }
     public long updateVersion(){
         return ++version;
     }
-    public User(long id, String login, String password) {
-        this.id = id;
+    public User(String login, String password) {
         this.login = login;
         this.password = password;
     }
@@ -48,5 +57,21 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Set<Post> getPosts() { return Collections.unmodifiableSet(posts); }
+
+    public void setPosts(Set<Post> posts) { this.posts = posts; }
+
+    public void addPost(Post post) {
+        this.posts.add(post);
+        post.setUser(this);
+    }
+
+    public void removePost(Post post){
+        if(this.posts.contains(post)){
+            this.posts.remove(post);
+            post.setUser(null);
+        }
     }
 }

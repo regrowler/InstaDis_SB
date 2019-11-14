@@ -3,21 +3,29 @@ package com.netcracker.instadis.model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.sql.Timestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.validator.constraints.Length;
 
-
+import javax.persistence.*;
 
 @Entity
 public class Post {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String title;
-    private String text;
-    private String image;
-    private Timestamp timestampCreation;
 
-    public Post(long id, String title, String text, String image, Timestamp timestampCreation) {
-        this.id = id;
+    @Length(max = 512000)
+    private String image;
+    private String description;
+
+    @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.REMOVE}, fetch = FetchType.EAGER)
+    @JoinColumn(name = "USER_ID")
+    private User user;
+
+    public Post(long id, String title, String image, Timestamp timestampCreation, User user) {
+        this.user = user;
         this.title = title;
         this.text = text;
         this.image = image;
@@ -25,7 +33,6 @@ public class Post {
     }
 
     public Post() {
-
     }
 
     public long getId() {
@@ -67,5 +74,13 @@ public class Post {
     public void setTimestampCreation(Timestamp timestampCreation) {
         this.timestampCreation = timestampCreation;
     }
+
+    public User getUser() { return user; }
+
+    public void setUser(User user) { this.user = user; }
+
+    public String getDescription() { return description; }
+
+    public void setDescription(String description) { this.description = description; }
     
 }

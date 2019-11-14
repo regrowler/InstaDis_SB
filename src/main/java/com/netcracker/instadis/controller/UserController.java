@@ -2,6 +2,7 @@ package com.netcracker.instadis.controller;
 
 import com.netcracker.instadis.dao.UserRepository;
 import com.netcracker.instadis.model.User;
+import com.netcracker.instadis.requestBodies.loginAndPasswordRequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("auth")
+@RequestMapping("/users")
 public class UserController {
     @Autowired
     private UserRepository userRepository;
@@ -21,57 +22,71 @@ public class UserController {
         return userRepository.findAll();
     }
 
-    @GetMapping("{id}")
-    public void getOne(HttpServletResponse response, @PathVariable Long id, @RequestHeader String pass) {
-        isUserRegistered(response, id, pass);
+
+    //todo: remove this query?
+    @GetMapping("{login}")
+    public Optional<User> getOne(HttpServletResponse response,
+                                 @PathVariable String login,
+                                 @RequestBody String password
+    ) {
+        if(isUserRegistered(response, login, password)){
+            return userRepository.findByLogin(login);
+        }
+        return Optional.empty();
     }
 
-    @PostMapping()
+
+    //Registration
+    @PostMapping(value = "/sign-up")
     public void createUser(HttpServletResponse response,
-                             @RequestHeader String login,
-                             @RequestHeader String pass) {
-        if (!isUserRegistered(response, login)) {
-            User user = new User();
-            user.setLogin(login);
-            user.setPassword(pass);
+                             @RequestBody loginAndPasswordRequestBody body) {
+        if (!isUserRegistered(response, body.getLogin())) {
+            User user = new User(body.getLogin(),body.getPassword());
             userRepository.save(user);
             response.setStatus(200);
-        }else {
+        } else {
             response.setStatus(403);
         }
     }
 
-    @DeleteMapping("{id}")
-    public void deleteUser(HttpServletResponse response,
-                           @PathVariable Long id,
-                           @RequestHeader String pass) {
-        if (isUserRegistered(response, id, pass)) {
-            userRepository.deleteById(id);
+    //Authorization
+    @PostMapping(value = "/sign-in")
+    public Optional<User> authUser(HttpServletResponse response,
+                           @RequestBody loginAndPasswordRequestBody body) {
+        if (isUserRegistered(response, body.getLogin(), body.getPassword())) {
+            response.setStatus(200);
+        } else {
+            response.setStatus(403);
         }
-        return;
+        return userRepository.findByLogin(body.getLogin());
+    }
+
+    @DeleteMapping()
+    public void deleteUser(HttpServletResponse response,
+                           @RequestBody loginAndPasswordRequestBody body) {
+        if (isUserRegistered(response, body.getLogin(), body.getPassword())) {
+            userRepository.deleteByLogin(body.getLogin());
+        }
     }
 
     @PatchMapping("{id}")
     public void updateUser(HttpServletResponse response,
                            @PathVariable Long id,
-                           @RequestHeader String login,
-                           @RequestHeader String oldpass,
-                           @RequestHeader String pass) {
-        if (isUserRegistered(response, id, oldpass)) {
+                           @RequestParam String login,
+                           @RequestParam String oldPassword,
+                           @RequestParam String password) {
+        if (isUserRegistered(response, id, oldPassword)) {
             User user = userRepository.findById(id).get();
             user.setId(id);
             user.setLogin(login);
-            user.setPassword(pass);
+            user.setPassword(password);
             user.updateVersion();
             userRepository.save(user);
             response.setStatus(200);
-            return;
         }
-        return;
     }
 
-    boolean isUserRegistered(HttpServletResponse response,
-                             @RequestHeader String login) {
+    private boolean isUserRegistered(HttpServletResponse response, String login) {
         Optional<User> user = userRepository.findByLogin(login);
         if (user.isPresent()) {
             response.setStatus(200);
@@ -81,10 +96,17 @@ public class UserController {
         return user.isPresent();
     }
 
-    boolean isUserRegistered(HttpServletResponse response,
-                             @RequestHeader Long id,
-                             @RequestHeader String pass) {
+    private boolean isUserRegistered(HttpServletResponse response, Long id, String password) {
         Optional<User> user = userRepository.findById(id);
+        return isUserRegistered(response, user,password);
+    }
+
+    private boolean isUserRegistered(HttpServletResponse response, String login, String password) {
+        Optional<User> user = userRepository.findByLogin(login);
+        return isUserRegistered(response,user,password);
+    }
+
+    private boolean isUserRegistered(HttpServletResponse response, Optional<User> user, String pass){
         if (user.isPresent()) {
             if (user.get().getPassword().equals(pass)) {
                 response.setStatus(200);

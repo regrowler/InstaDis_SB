@@ -12,12 +12,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import com.netcracker.instadis.requestBodies.createPostForUserRequestBody;
+import org.apache.tomcat.util.codec.binary.Base64;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.sql.Timestamp;
 
 @ControllerAdvice
 @RestController
-@RequestMapping("posts")
+@RequestMapping("/posts")
 public class PostController {
 
     @Autowired
@@ -66,28 +76,44 @@ public class PostController {
         }else{
         Post post = postOptional.orElse(new Post());
         return post;
-        }
     }
 
-    @PostMapping
+
+    @GetMapping("{login}")
+    public List<Post> getPostByID(@PathVariable String login) {
+        return postRepository.findAllByUserLogin(login);
+    }
+
+    @GetMapping("{login}/{id}")
+    public Optional<Post> getUserPostById(@PathVariable String login,
+                                          @PathVariable Long id){
+        return postRepository.findByUserLoginAndId(login,id);
+    }
+
+    @RequestMapping(method = RequestMethod.POST)
     public void createPost(HttpServletResponse response,
-                           @RequestParam String title,
-                           @RequestParam String fileBase64
+                           @RequestBody createPostForUserRequestBody body
     ) {
         Post post = new Post();
-        post.setTitle(title);
-        post.setImage(fileBase64);
-        post.setTimestampCreation(new Timestamp(System.currentTimeMillis()));
+        post.setTitle(body.getTitle());
+        post.setUser(body.getUser());
+        post.setDescription(body.getDescription());
+        post.setImage(body.getFile());
+        post.setTimestamp_creation(body.getDate());
         postRepository.save(post);
         response.setStatus(200);
     }
 
+
+
     @DeleteMapping
-    public void deletePost(HttpServletResponse response, @RequestParam Long id) {
+    public void deletePost(HttpServletResponse response,
+                           @RequestParam Long id
+    ) {
         postRepository.deleteById(id);
-        return;
     }
 
+    //todo: izmenit zapros
     @PutMapping
     public void updatePost(HttpServletResponse response, @RequestParam Integer id, @RequestParam String title, @RequestParam String fileBase64) {
         Optional<Post> postOptional = postRepository.findById(id);
@@ -102,7 +128,3 @@ public class PostController {
         response.setStatus(200);
         }
         return;
-
-    }
-
-}

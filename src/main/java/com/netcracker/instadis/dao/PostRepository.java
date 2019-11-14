@@ -12,9 +12,10 @@ import java.util.Optional;
 public interface PostRepository extends PagingAndSortingRepository<Post,Long> {
 
     Page<Post> findAll(Pageable page);
-    Optional<Post> findById(Integer id);
-    Optional<Post> findByTitle(String login);
     void deleteById(Long id);
+    Optional<Post> findById(Long id);
     Post save(Post post);
+    List<Post> findAllByUserLogin(String login);
+    Optional<Post> findByUserLoginAndId(String login, Long id);
 }
 
