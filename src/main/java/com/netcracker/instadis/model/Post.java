@@ -2,6 +2,9 @@ package com.netcracker.instadis.model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.sql.Timestamp;
+
+
 
 @Entity
 public class Post {
@@ -9,14 +12,16 @@ public class Post {
     @Id
     private long id;
     private String title;
+    private String text;
     private String image;
-    private String timestamp_creation;
+    private Timestamp timestampCreation;
 
-    public Post(long id, String title, String image, String timestamp_creation) {
+    public Post(long id, String title, String text, String image, Timestamp timestampCreation) {
         this.id = id;
         this.title = title;
+        this.text = text;
         this.image = image;
-        this.timestamp_creation = timestamp_creation;
+        this.timestampCreation = timestampCreation;
     }
 
     public Post() {
@@ -39,6 +44,14 @@ public class Post {
         this.title = title;
     }
 
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
     public String getImage() {
         return image;
     }
@@ -47,12 +60,12 @@ public class Post {
         this.image = image;
     }
 
-    public String getTimestamp_creation() {
-        return timestamp_creation;
+    public Timestamp getTimestampCreation() {
+        return timestampCreation;
     }
 
-    public void setTimestamp_creation(String timestamp_creation) {
-        this.timestamp_creation = timestamp_creation;
+    public void setTimestampCreation(Timestamp timestampCreation) {
+        this.timestampCreation = timestampCreation;
     }
     
 }

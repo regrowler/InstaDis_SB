@@ -1,21 +1,19 @@
+
 package com.netcracker.instadis.controller;
 
-
-import com.netcracker.instadis.dao.PostRepository;
 import com.netcracker.instadis.model.Post;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.netcracker.instadis.dao.PostRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
+import java.sql.Timestamp;
 
 @ControllerAdvice
 @RestController
@@ -26,35 +24,60 @@ public class PostController {
     private PostRepository postRepository;
 
     @GetMapping
-    public List<Post> list() {
-        return postRepository.findAll();
+    public Page<Post> list() {
+        Pageable page = new PageRequest(0, 5,Direction.ASC,"timestampCreation");
+        return postRepository.findAll(page);
+    }
 
+    @GetMapping("hard_code")
+    public void setPostsTest() {
+        Post post1 = new Post();
+        Post post2 = new Post();
+        Post post3 = new Post();
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+        post1.setId(1);
+        post1.setTitle("Title1");
+        post1.setText("Text1");
+        post1.setImage("Image1");
+        post1.setTimestampCreation(timestamp);
+        post2.setId(2);
+        post2.setTitle("Title2");
+        post2.setText("Text2");
+        post2.setImage("Image2");
+        post2.setTimestampCreation(timestamp);
+        post3.setId(3);
+        post3.setTitle("Title3");
+        post3.setText("Text3");
+        post3.setImage("Image3");
+        post3.setTimestampCreation(timestamp);
+
+        postRepository.save(post1);
+        postRepository.save(post2);
+        postRepository.save(post3);
     }
 
     @GetMapping("{id}")
-    @ResponseStatus(HttpStatus.NOT_FOUND)  // 404
-    public Optional<Post> getOne(@PathVariable Integer id) {
-        Optional<Post> post = postRepository.findById(id);
+    public Post getOne(HttpServletResponse response, @PathVariable Integer id) {
+        Optional<Post> postOptional = postRepository.findById((long)id);
+        if(postOptional == null) { 
+            response.setStatus(404);
+            return null;
+        }else{
+        Post post = postOptional.orElse(new Post());
         return post;
+        }
     }
 
     @PostMapping
     public void createPost(HttpServletResponse response,
                            @RequestParam String title,
-                           @RequestParam("file") MultipartFile file
+                           @RequestParam String fileBase64
     ) {
         Post post = new Post();
         post.setTitle(title);
-        if (!file.isEmpty()) {
-            try {
-                String encodedImage = encodeFileToBase64Binary((File) file);
-                post.setImage(encodedImage);
-            } catch (Exception e) {
-                response.setStatus(500);
-            }
-        } else {
-            response.setStatus(500);
-        }
+        post.setImage(fileBase64);
+        post.setTimestampCreation(new Timestamp(System.currentTimeMillis()));
         postRepository.save(post);
         response.setStatus(200);
     }
@@ -66,39 +89,20 @@ public class PostController {
     }
 
     @PutMapping
-    public void updatePost(HttpServletResponse response, @RequestParam Integer id, @RequestParam String title, @RequestParam("file") MultipartFile file) {
-        Post post = new Post();
+    public void updatePost(HttpServletResponse response, @RequestParam Integer id, @RequestParam String title, @RequestParam String fileBase64) {
+        Optional<Post> postOptional = postRepository.findById(id);
+        if(postOptional == null) { 
+            response.setStatus(500);
+        }else{
+        Post post = postOptional.orElse(new Post());
         post.setTitle(title);
         post.setId(id);
-        if (!file.isEmpty()) {
-            try {
-                String encodedImage = encodeFileToBase64Binary((File) file);
-                post.setImage(encodedImage);
-            } catch (Exception e) {
-                response.setStatus(500);
-            }
-        } else {
-            response.setStatus(500);
-        }
+        post.setImage(fileBase64);
         postRepository.save(post);
         response.setStatus(200);
-        return;
-    }
-
-    private static String encodeFileToBase64Binary(File file){
-        String encodedfile = null;
-        try {
-            FileInputStream fileInputStreamReader = new FileInputStream(file);
-            byte[] bytes = new byte[(int)file.length()];
-            fileInputStreamReader.read(bytes);
-            encodedfile = new String(Base64.encodeBase64(bytes), "UTF-8");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        return;
 
-        return encodedfile;
     }
 
 }

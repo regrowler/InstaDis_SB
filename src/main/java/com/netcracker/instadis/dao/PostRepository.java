@@ -1,18 +1,20 @@
 package com.netcracker.instadis.dao;
 
 import com.netcracker.instadis.model.Post;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PostRepository extends JpaRepository<Post,Long> {
+public interface PostRepository extends PagingAndSortingRepository<Post,Long> {
 
-    List<Post> findAll();
-    void deleteById(Long id);
+    Page<Post> findAll(Pageable page);
     Optional<Post> findById(Integer id);
-    void save(Post post);
+    Optional<Post> findByTitle(String login);
+    void deleteById(Long id);
+    Post save(Post post);
 }
 
