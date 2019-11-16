@@ -1,7 +1,6 @@
 package com.netcracker.instadis;
 
 import com.netcracker.instadis.dao.PostRepository;
-import com.netcracker.instadis.model.Post;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -11,6 +10,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 
+/*
+LISTENER na podnyatiya springa
+ */
 
 class TestPostRepository {
 

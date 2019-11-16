@@ -39,7 +39,7 @@ public class PostController {
         return postRepository.findByUserLoginAndId(login,id);
     }
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping()
     public void createPost(HttpServletResponse response,
                            @RequestBody createPostForUserRequestBody body
     ) {
