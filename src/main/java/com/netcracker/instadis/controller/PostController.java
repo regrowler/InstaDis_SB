@@ -55,9 +55,9 @@ public class PostController {
 
 
 
-    @DeleteMapping
+    @DeleteMapping("{id}")
     public void deletePost(HttpServletResponse response,
-                           @RequestParam Long id
+                           @PathVariable Long id
     ) {
         postRepository.deleteById(id);
     }

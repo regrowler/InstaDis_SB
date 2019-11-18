@@ -3,12 +3,15 @@ package com.netcracker.instadis.controller;
 import com.netcracker.instadis.dao.UserRepository;
 import com.netcracker.instadis.model.User;
 import com.netcracker.instadis.requestBodies.loginAndPasswordRequestBody;
+import com.netcracker.instadis.requestBodies.subscriptionBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/users")
@@ -19,52 +22,69 @@ public class UserController {
     //for tests only
     @GetMapping
     public List<User> list(HttpServletResponse response) {
+        response.setStatus(200);
         return userRepository.findAll();
     }
-
-
-    //todo: remove this query?
-    @GetMapping("{login}")
-    public Optional<User> getOne(HttpServletResponse response,
-                                 @PathVariable String login,
-                                 @RequestBody String password
-    ) {
-        if(isUserRegistered(response, login, password)){
-            return userRepository.findByLogin(login);
-        }
-        return Optional.empty();
-    }
-
 
     //Registration
     @PostMapping(value = "/sign-up")
     public void createUser(HttpServletResponse response,
-                             @RequestBody loginAndPasswordRequestBody body) {
-        if (!isUserRegistered(response, body.getLogin())) {
+                             @RequestBody loginAndPasswordRequestBody body) throws IOException {
+        if (!isUserRegistered(body.getLogin())) {
             User user = new User(body.getLogin(),body.getPassword());
             userRepository.save(user);
             response.setStatus(200);
         } else {
-            response.setStatus(403);
+            response.sendError(403,"User is signed up already");
         }
     }
 
     //Authorization
     @PostMapping(value = "/sign-in")
     public Optional<User> authUser(HttpServletResponse response,
-                           @RequestBody loginAndPasswordRequestBody body) {
-        if (isUserRegistered(response, body.getLogin(), body.getPassword())) {
+                           @RequestBody loginAndPasswordRequestBody body) throws IOException {
+        if (isUserRegistered(body.getLogin(), body.getPassword())) {
             response.setStatus(200);
         } else {
-            response.setStatus(403);
+            response.sendError(401,"Login or password are incorrect");
         }
         return userRepository.findByLogin(body.getLogin());
     }
 
+    //Subscribing user
+    @PostMapping(value = "/subscribe")
+    public void subscribeToUser(HttpServletResponse response,
+                                @RequestBody subscriptionBody body){
+        if(isUserRegistered(body.getUsername()) && isUserRegistered(body.getSubscribe())){
+            User subscribe = userRepository.findByLogin(body.getSubscribe()).get();
+            User user = userRepository.findByLogin(body.getUsername()).get();
+
+            user.getSubscriptions().add(subscribe);
+            userRepository.save(user);
+
+            response.setStatus(200);
+        }
+    }
+
+    @GetMapping(value = "/subscribe/{username}")
+    public Set<User> getSubscribers(HttpServletResponse response,
+                               @PathVariable String username) throws IOException {
+        if (isUserRegistered(username)){
+            response.setStatus(200);
+            return userRepository.findByLogin(username).map(User::getSubscriptions).get();
+        }
+        response.sendError(401,"User was not found");
+        return null;
+    }
+
+
+
+
     @DeleteMapping()
     public void deleteUser(HttpServletResponse response,
                            @RequestBody loginAndPasswordRequestBody body) {
-        if (isUserRegistered(response, body.getLogin(), body.getPassword())) {
+        if (isUserRegistered(body.getLogin(), body.getPassword())) {
+            response.setStatus(200);
             userRepository.deleteByLogin(body.getLogin());
         }
     }
@@ -74,8 +94,8 @@ public class UserController {
                            @PathVariable Long id,
                            @RequestParam String login,
                            @RequestParam String oldPassword,
-                           @RequestParam String password) {
-        if (isUserRegistered(response, id, oldPassword)) {
+                           @RequestParam String password){
+        if (isUserRegistered(id, oldPassword)) {
             User user = userRepository.findById(id).get();
             user.setId(id);
             user.setLogin(login);
@@ -86,38 +106,19 @@ public class UserController {
         }
     }
 
-    private boolean isUserRegistered(HttpServletResponse response, String login) {
-        Optional<User> user = userRepository.findByLogin(login);
-        if (user.isPresent()) {
-            response.setStatus(200);
-        } else {
-            response.setStatus(404);
-        }
-        return user.isPresent();
+    private boolean isUserRegistered(String login) {
+        return userRepository.findByLogin(login).isPresent();
     }
 
-    private boolean isUserRegistered(HttpServletResponse response, Long id, String password) {
-        Optional<User> user = userRepository.findById(id);
-        return isUserRegistered(response, user,password);
+    private boolean isUserRegistered(Long id, String password){
+        return isUserRegistered(userRepository.findById(id),password);
     }
 
-    private boolean isUserRegistered(HttpServletResponse response, String login, String password) {
-        Optional<User> user = userRepository.findByLogin(login);
-        return isUserRegistered(response,user,password);
+    private boolean isUserRegistered(String login, String password){
+        return isUserRegistered(userRepository.findByLogin(login),password);
     }
 
-    private boolean isUserRegistered(HttpServletResponse response, Optional<User> user, String pass){
-        if (user.isPresent()) {
-            if (user.get().getPassword().equals(pass)) {
-                response.setStatus(200);
-                return true;
-            } else {
-                response.setStatus(401);
-                return false;
-            }
-        } else {
-            response.setStatus(404);
-            return false;
-        }
+    private boolean isUserRegistered(Optional<User> user, String pass) {
+        return user.map(value -> value.getPassword().equals(pass)).orElse(false);
     }
 }
