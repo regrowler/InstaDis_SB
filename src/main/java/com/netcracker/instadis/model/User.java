@@ -10,13 +10,6 @@ import java.util.Set;
 @Entity
 public class User {
 
-    @Override
-    public String toString() {
-        return "User{\n" +
-                "login='" + login + '\'' +
-                "\n}";
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "USER_ID")
@@ -24,6 +17,7 @@ public class User {
 
     @Column(unique = true)
     private String login;
+    @JsonIgnore
     private String password;
     @Version
     @Column(name = "VERSION")

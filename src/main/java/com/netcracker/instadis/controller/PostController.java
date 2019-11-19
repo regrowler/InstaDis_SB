@@ -35,15 +35,14 @@ public class PostController {
 
     @GetMapping
     public List<Post> list() {
-        Pageable page = new PageRequest(0, 5,Direction.ASC,"timestampCreation");
-        return postRepository.findAll(page).getContent();
+        return postRepository.findAll( PageRequest.of(0,5,Direction.DESC,"timestampCreation")).getContent();
     }
 
 
     @GetMapping("{login}/page/{numpage}")
     public Page<Post> getPostByID(@PathVariable String login, @PathVariable Integer numpage) {
         numpage = numpage - 1;
-        Pageable page = new PageRequest(numpage, 2,Direction.DESC,"timestampCreation");
+        Pageable page = PageRequest.of(numpage,2,Direction.DESC,"timestampCreation");
         return postRepository.findAllByUserLogin(login, page);
     }
 
@@ -79,19 +78,23 @@ public class PostController {
 
     //todo: izmenit zapros
     @PutMapping
-    public void updatePost(HttpServletResponse response, @RequestParam Integer id, @RequestParam String title, @RequestParam String fileBase64) {
+    public void updatePost(HttpServletResponse response,
+                           @RequestParam Integer id,
+                           @RequestParam String title,
+                           @RequestParam String fileBase64) {
         Optional<Post> postOptional = postRepository.findById((long)id);
-        if(postOptional == null) { 
+        if(!postOptional.isPresent()) {
             response.setStatus(500);
-        }else{
-        Post post = postOptional.orElse(new Post());
-        post.setTitle(title);
-        post.setId(id);
-        post.setImage(fileBase64);
-        postRepository.save(post);
-        response.setStatus(200);
         }
-        return;
+        else
+        {
+            Post post = postOptional.orElse(new Post());
+            post.setTitle(title);
+            post.setId(id);
+            post.setImage(fileBase64);
+            postRepository.save(post);
+            response.setStatus(200);
+        }
     }
 
 }
