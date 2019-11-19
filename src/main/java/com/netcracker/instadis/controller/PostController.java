@@ -43,7 +43,7 @@ public class PostController {
     @GetMapping("{login}/page/{numpage}")
     public Page<Post> getPostByID(@PathVariable String login, @PathVariable Integer numpage) {
         numpage = numpage - 1;
-        Pageable page = new PageRequest(numpage, 2,Direction.ASC,"timestampCreation");
+        Pageable page = new PageRequest(numpage, 2,Direction.DESC,"timestampCreation");
         return postRepository.findAllByUserLogin(login, page);
     }
 
