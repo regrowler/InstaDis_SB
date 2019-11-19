@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -15,7 +16,7 @@ public interface PostRepository extends PagingAndSortingRepository<Post,Long> {
     void deleteById(Long id);
     Optional<Post> findById(Long id);
     Post save(Post post);
-    List<Post> findAllByUserLogin(String login);
+    Page<Post> findAllByUserLogin(String login, Pageable page);
     Optional<Post> findByUserLoginAndId(String login, Long id);
 }
 
