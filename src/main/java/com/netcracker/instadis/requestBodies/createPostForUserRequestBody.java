@@ -14,4 +14,20 @@ public class createPostForUserRequestBody {
     private String description;
     private String file;
     private String date;
+    
+	public String getTitle() {
+		return title;
+	}
+	public User getUser() {
+		return user;
+	}
+	public String getDescription() {
+		return description;
+	}
+	public String getFile() {
+		return file;
+	}
+	public Object getDate() {
+		return date;
+	}
 }
