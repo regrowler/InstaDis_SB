@@ -34,54 +34,17 @@ public class PostController {
     private PostRepository postRepository;
 
     @GetMapping
-    public Page<Post> list() {
+    public List<Post> list() {
         Pageable page = new PageRequest(0, 5,Direction.ASC,"timestampCreation");
-        return postRepository.findAll(page);
-    }
-
-    @GetMapping("hard_code")
-    public void setPostsTest() {
-        Post post1 = new Post();
-        Post post2 = new Post();
-        Post post3 = new Post();
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-
-        post1.setId(1);
-        post1.setTitle("Title1");
-        post1.setText("Text1");
-        post1.setImage("Image1");
-        post1.setTimestampCreation(timestamp);
-        post2.setId(2);
-        post2.setTitle("Title2");
-        post2.setText("Text2");
-        post2.setImage("Image2");
-        post2.setTimestampCreation(timestamp);
-        post3.setId(3);
-        post3.setTitle("Title3");
-        post3.setText("Text3");
-        post3.setImage("Image3");
-        post3.setTimestampCreation(timestamp);
-
-        postRepository.save(post1);
-        postRepository.save(post2);
-        postRepository.save(post3);
-    }
-
-    @GetMapping("{id}")
-    public Post getOne(HttpServletResponse response, @PathVariable Integer id) {
-        Optional<Post> postOptional = postRepository.findById((long)id);
-        if(postOptional == null) { 
-            response.setStatus(404);
-            return null;
-        }else{
-        Post post = postOptional.orElse(new Post());
-        return post;
+        return postRepository.findAll(page).getContent();
     }
 
 
-    @GetMapping("{login}")
-    public List<Post> getPostByID(@PathVariable String login) {
-        return postRepository.findAllByUserLogin(login);
+    @GetMapping("{login}/page/{numpage}")
+    public Page<Post> getPostByID(@PathVariable String login, @PathVariable Integer numpage) {
+        numpage = numpage - 1;
+        Pageable page = new PageRequest(numpage, 2,Direction.DESC,"timestampCreation");
+        return postRepository.findAllByUserLogin(login, page);
     }
 
     @GetMapping("{login}/{id}")
@@ -90,7 +53,7 @@ public class PostController {
         return postRepository.findByUserLoginAndId(login,id);
     }
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping()
     public void createPost(HttpServletResponse response,
                            @RequestBody createPostForUserRequestBody body
     ) {
@@ -99,7 +62,8 @@ public class PostController {
         post.setUser(body.getUser());
         post.setDescription(body.getDescription());
         post.setImage(body.getFile());
-        post.setTimestamp_creation(body.getDate());
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        post.setTimestampCreation(timestamp);
         postRepository.save(post);
         response.setStatus(200);
     }
@@ -116,7 +80,7 @@ public class PostController {
     //todo: izmenit zapros
     @PutMapping
     public void updatePost(HttpServletResponse response, @RequestParam Integer id, @RequestParam String title, @RequestParam String fileBase64) {
-        Optional<Post> postOptional = postRepository.findById(id);
+        Optional<Post> postOptional = postRepository.findById((long)id);
         if(postOptional == null) { 
             response.setStatus(500);
         }else{
@@ -128,3 +92,6 @@ public class PostController {
         response.setStatus(200);
         }
         return;
+    }
+
+}

@@ -1,5 +1,4 @@
 package com.netcracker.instadis.model;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.sql.Timestamp;
@@ -20,14 +19,16 @@ public class Post {
     private String image;
     private String description;
 
+    Timestamp timestampCreation;
+
     @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.REMOVE}, fetch = FetchType.EAGER)
     @JoinColumn(name = "USER_ID")
     private User user;
 
-    public Post(long id, String title, String image, Timestamp timestampCreation, User user) {
+    public Post(long id, String title, String image, String description, Timestamp timestampCreation, User user) {
         this.user = user;
         this.title = title;
-        this.text = text;
+        this.description = description;
         this.image = image;
         this.timestampCreation = timestampCreation;
     }
@@ -49,14 +50,6 @@ public class Post {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
     }
 
     public String getImage() {
