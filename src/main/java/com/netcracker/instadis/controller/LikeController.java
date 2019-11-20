@@ -11,7 +11,6 @@ import com.netcracker.instadis.requestBodies.UserPostLikeRequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 import java.util.Optional;
 
 @ControllerAdvice
@@ -28,10 +27,6 @@ public class LikeController {
         @Autowired
         UserRepository userRepository;
 
-        @GetMapping
-        public List<UserPostLike> all(HttpServletResponse response){
-            return likeRepository.findAll();
-        }
 
         @PostMapping
         public void like(HttpServletResponse response,
