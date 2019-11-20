@@ -21,6 +21,7 @@ public class UserPostLike {
     @JsonIgnore
     private Post post;
 
+
     private boolean isLike;
 
 
