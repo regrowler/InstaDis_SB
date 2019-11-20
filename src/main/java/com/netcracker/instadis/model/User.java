@@ -35,6 +35,10 @@ public class User {
     @JsonIgnore
     private Set<User> subscribers = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.REFRESH, CascadeType.REMOVE}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JsonIgnore
+    private Set<UserPostLike> likes = new HashSet<>();
+
 
     public User() {
     }
@@ -67,7 +71,6 @@ public class User {
         this.subscribers = subscribers;
     }
 
-
     public void setId(long id) {
         this.id = id;
     }
@@ -91,4 +94,12 @@ public class User {
     public Set<Post> getPosts() { return Collections.unmodifiableSet(posts); }
 
     public void setPosts(Set<Post> posts) { this.posts = posts; }
+
+    public Set<UserPostLike> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Set<UserPostLike> likes) {
+        this.likes = likes;
+    }
 }

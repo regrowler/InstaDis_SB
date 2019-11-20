@@ -2,6 +2,9 @@ package com.netcracker.instadis.model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.validator.constraints.Length;
 
@@ -19,21 +22,32 @@ public class Post {
     private String image;
     private String description;
 
-    Timestamp timestampCreation;
+    private Timestamp timestampCreation;
 
-    @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.REMOVE}, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = { CascadeType.REFRESH }, fetch = FetchType.EAGER)
     @JoinColumn(name = "USER_ID")
     private User user;
 
-    public Post(long id, String title, String image, String description, Timestamp timestampCreation, User user) {
-        this.user = user;
+    @OneToMany(mappedBy = "post", cascade = {CascadeType.REFRESH, CascadeType.REMOVE}, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<UserPostLike> likes = new HashSet<>();
+
+    public Post(String title, String image, String description, Timestamp timestampCreation, User user) {
         this.title = title;
-        this.description = description;
         this.image = image;
+        this.description = description;
         this.timestampCreation = timestampCreation;
+        this.user = user;
     }
 
     public Post() {
+    }
+
+    public Set<UserPostLike> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Set<UserPostLike> likes) {
+        this.likes = likes;
     }
 
     public long getId() {
