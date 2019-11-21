@@ -10,13 +10,6 @@ import java.util.Set;
 @Entity
 public class User {
 
-    @Override
-    public String toString() {
-        return "User{\n" +
-                "login='" + login + '\'' +
-                "\n}";
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "USER_ID")
@@ -24,6 +17,7 @@ public class User {
 
     @Column(unique = true)
     private String login;
+    @JsonIgnore
     private String password;
     @Version
     @Column(name = "VERSION")
@@ -40,6 +34,10 @@ public class User {
     @ManyToMany(mappedBy = "subscriptions", cascade = {CascadeType.REFRESH, CascadeType.REMOVE}, fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<User> subscribers = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.REFRESH, CascadeType.REMOVE}, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JsonIgnore
+    private Set<UserPostLike> likes = new HashSet<>();
 
 
     public User() {
@@ -73,7 +71,6 @@ public class User {
         this.subscribers = subscribers;
     }
 
-
     public void setId(long id) {
         this.id = id;
     }
@@ -94,7 +91,15 @@ public class User {
         this.password = password;
     }
 
-    public Set<Post> getPosts() { return Collections.unmodifiableSet(posts); }
+    public Set<Post> getPosts() { return posts; }
 
     public void setPosts(Set<Post> posts) { this.posts = posts; }
+
+    public Set<UserPostLike> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Set<UserPostLike> likes) {
+        this.likes = likes;
+    }
 }

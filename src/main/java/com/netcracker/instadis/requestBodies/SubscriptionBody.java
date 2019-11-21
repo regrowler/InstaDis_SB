@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class subscriptionBody {
+public class SubscriptionBody {
     private String username;
     private String subscribe;
 }

@@ -2,11 +2,10 @@ package com.netcracker.instadis.controller;
 
 import com.netcracker.instadis.dao.UserRepository;
 import com.netcracker.instadis.model.User;
-import com.netcracker.instadis.requestBodies.loginAndPasswordRequestBody;
-import com.netcracker.instadis.requestBodies.subscriptionBody;
+import com.netcracker.instadis.requestBodies.AuthorizationRequestBody;
+import com.netcracker.instadis.requestBodies.SubscriptionBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
@@ -29,7 +28,7 @@ public class UserController {
     //Registration
     @PostMapping(value = "/sign-up")
     public void createUser(HttpServletResponse response,
-                             @RequestBody loginAndPasswordRequestBody body) throws IOException {
+                             @RequestBody AuthorizationRequestBody body) throws IOException {
         if (!isUserRegistered(body.getLogin())) {
             User user = new User(body.getLogin(),body.getPassword());
             userRepository.save(user);
@@ -42,7 +41,7 @@ public class UserController {
     //Authorization
     @PostMapping(value = "/sign-in")
     public Optional<User> authUser(HttpServletResponse response,
-                           @RequestBody loginAndPasswordRequestBody body) throws IOException {
+                           @RequestBody AuthorizationRequestBody body) throws IOException {
         if (isUserRegistered(body.getLogin(), body.getPassword())) {
             response.setStatus(200);
         } else {
@@ -54,7 +53,7 @@ public class UserController {
     //Subscribing user
     @PostMapping(value = "/subscribe")
     public String subscribeToUser(HttpServletResponse response,
-                                @RequestBody subscriptionBody body) throws IOException {
+                                @RequestBody SubscriptionBody body) throws IOException {
         if (isUserRegistered(body.getUsername()) && isUserRegistered(body.getSubscribe())) {
             User subscribe = userRepository.findByLogin(body.getSubscribe()).get();
             User user = userRepository.findByLogin(body.getUsername()).get();
@@ -85,7 +84,7 @@ public class UserController {
 
     @DeleteMapping()
     public void deleteUser(HttpServletResponse response,
-                           @RequestBody loginAndPasswordRequestBody body) {
+                           @RequestBody AuthorizationRequestBody body) {
         if (isUserRegistered(body.getLogin(), body.getPassword())) {
             response.setStatus(200);
             userRepository.deleteByLogin(body.getLogin());
