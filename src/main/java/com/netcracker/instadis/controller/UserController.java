@@ -32,25 +32,25 @@ public class UserController {
     //Registration
     @PostMapping(value = "/sign-up")
     public void createUser(HttpServletResponse response,
-                             @RequestBody AuthorizationRequestBody body) throws NoSuchAlgorithmException {
+                             @RequestBody AuthorizationRequestBody body) throws NoSuchAlgorithmException, IOException {
         Optional<User> optionalUser = userRepository.findByLogin(body.getLogin());
         if (!optionalUser.isPresent()) {
             User user = new User(body.getLogin(),hashMDA5(body.getPassword()));
             userRepository.save(user);
             response.setStatus(200);
         } else {
-            response.setStatus(403);
+            response.sendError(403,"Username is already taken");
         }
     }
 
     @PostMapping(value = "/sign-in")
     public Optional<User> authUser(HttpServletResponse response,
-                           @RequestBody AuthorizationRequestBody body) throws  NoSuchAlgorithmException {
+                           @RequestBody AuthorizationRequestBody body) throws NoSuchAlgorithmException, IOException {
         Optional<User> optionalUser = userRepository.findByLoginAndPassword(body.getLogin(),hashMDA5(body.getPassword()));
         if (optionalUser.isPresent()) {
             response.setStatus(200);
         } else {
-            response.setStatus(404);
+            response.sendError(404,"User was not found");
         }
         return optionalUser;
     }
@@ -58,7 +58,7 @@ public class UserController {
 
     @PostMapping(value = "/subscribe")
     public void subscribeToUser(HttpServletResponse response,
-                                @RequestBody SubscriptionBody body) {
+                                @RequestBody SubscriptionBody body) throws IOException {
         Optional<User> optionalSubscribe = isUserRegistered(body.getSubscribe());
         Optional<User> optionalUser = isUserRegistered(body.getUsername());
         if (optionalSubscribe.isPresent() && optionalUser.isPresent()) {
@@ -68,13 +68,13 @@ public class UserController {
             userRepository.save(user);
             response.setStatus(200);
         } else {
-            response.setStatus(404);
+            response.sendError(404,"User was not found");
         }
     }
 
     @PostMapping(value = "/subscribe/is")
     public boolean isSubscribed(HttpServletResponse response,
-                                @RequestBody SubscriptionBody body){
+                                @RequestBody SubscriptionBody body) throws IOException {
         Optional<User> optionalSubscribe = isUserRegistered(body.getSubscribe());
         Optional<User> optionalUser = isUserRegistered(body.getUsername());
         if(optionalSubscribe.isPresent() && optionalUser.isPresent()) {
@@ -83,21 +83,21 @@ public class UserController {
             return user.getSubscriptions().contains(subscribe);
         }
         else{
-            response.setStatus(404);
+            response.sendError(404,"User was not found");
             return false;
         }
     }
 
     @GetMapping(value = "/subscribe/{username}")
     public Optional<Set<User>> getSubscribers(HttpServletResponse response,
-                               @PathVariable String username){
+                               @PathVariable String username) throws IOException {
         Optional<User> optionalUser = isUserRegistered(username);
         if (optionalUser.isPresent()){
             response.setStatus(200);
             return optionalUser.map(User::getSubscriptions);
         }
         else {
-            response.setStatus(404);
+            response.sendError(404,"User was not found");
             return Optional.empty();
         }
     }
@@ -107,14 +107,14 @@ public class UserController {
 
     @DeleteMapping()
     public void deleteUser(HttpServletResponse response,
-                           @RequestBody AuthorizationRequestBody body) throws  NoSuchAlgorithmException {
+                           @RequestBody AuthorizationRequestBody body) throws NoSuchAlgorithmException, IOException {
         Optional<User> optionalUser = userRepository.findByLoginAndPassword(body.getLogin(),hashMDA5(body.getPassword()));
         if (optionalUser.isPresent()) {
             response.setStatus(200);
             userRepository.deleteByLogin(body.getLogin());
         }
         else{
-            response.setStatus(404);
+            response.sendError(404,"User was not found");
         }
     }
 
@@ -123,7 +123,7 @@ public class UserController {
                            @PathVariable Long id,
                            @RequestParam String login,
                            @RequestParam String oldPassword,
-                           @RequestParam String password) throws NoSuchAlgorithmException {
+                           @RequestParam String password) throws NoSuchAlgorithmException, IOException {
         Optional<User> optionalUser = userRepository.findByLoginAndPassword(login,hashMDA5(oldPassword));
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
@@ -131,6 +131,9 @@ public class UserController {
             user.setPassword(password);
             userRepository.save(user);
             response.setStatus(200);
+        }
+        else{
+            response.sendError(404,"User was not found");
         }
     }
 
