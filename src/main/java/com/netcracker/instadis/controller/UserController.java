@@ -65,7 +65,7 @@ public class UserController {
         }
     }
 
-    @GetMapping(value = "/subscribe")
+    @PostMapping(value = "/subscribe/is")
     public boolean isSubscribed(HttpServletResponse response,
                                 @RequestBody SubscriptionBody body) throws IOException {
         if(isUserRegistered(body.getUsername()) && isUserRegistered(body.getSubscribe())) {
