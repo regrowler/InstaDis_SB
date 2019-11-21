@@ -17,7 +17,6 @@ public class User {
 
     @Column(unique = true)
     private String login;
-    @JsonIgnore
     private String password;
     @Version
     @Column(name = "VERSION")
@@ -41,10 +40,6 @@ public class User {
 
 
     public User() {
-    }
-
-    public long updateVersion(){
-        return ++version;
     }
 
     public User(String login, String password) {
