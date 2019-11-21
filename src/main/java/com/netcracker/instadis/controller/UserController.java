@@ -52,17 +52,30 @@ public class UserController {
 
     //Subscribing user
     @PostMapping(value = "/subscribe")
-    public String subscribeToUser(HttpServletResponse response,
+    public void subscribeToUser(HttpServletResponse response,
                                 @RequestBody SubscriptionBody body) throws IOException {
         if (isUserRegistered(body.getUsername()) && isUserRegistered(body.getSubscribe())) {
             User subscribe = userRepository.findByLogin(body.getSubscribe()).get();
             User user = userRepository.findByLogin(body.getUsername()).get();
             user.getSubscriptions().add(subscribe);
             userRepository.save(user);
-            return "Subscription successful";
+            response.setStatus(200);
         } else {
-            response.sendError(401, "Unable to subscribe");
-            return "Unable to subscribe";
+            response.sendError(500, "Unable to subscribe");
+        }
+    }
+
+    @PostMapping(value = "/subscribe/is")
+    public boolean isSubscribed(HttpServletResponse response,
+                                @RequestBody SubscriptionBody body) throws IOException {
+        if(isUserRegistered(body.getUsername()) && isUserRegistered(body.getSubscribe())) {
+            User subscribe = userRepository.findByLogin(body.getSubscribe()).get();
+            User user = userRepository.findByLogin(body.getUsername()).get();
+            return user.getSubscriptions().contains(subscribe);
+        }
+        else{
+            response.setStatus(500);
+            return false;
         }
     }
 
@@ -74,7 +87,7 @@ public class UserController {
             return userRepository.findByLogin(username).map(User::getSubscriptions);
         }
         else {
-            response.sendError(401, "User was not found");
+            response.sendError(500, "User was not found");
             return Optional.empty();
         }
     }
