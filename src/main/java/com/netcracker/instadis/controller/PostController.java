@@ -12,6 +12,8 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import com.netcracker.instadis.requestBodies.CreatePostRequestBody;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.sql.Timestamp;
@@ -46,16 +48,21 @@ public class PostController {
     @PostMapping()
     public void createPost(HttpServletResponse response,
                            @RequestBody CreatePostRequestBody body
-    ) {
-        Post post = new Post();
-        post.setTitle(body.getTitle());
-        post.setUser(body.getUser());
-        post.setDescription(body.getDescription());
-        post.setImage(body.getFile());
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        post.setTimestampCreation(timestamp);
-        postRepository.save(post);
-        response.setStatus(200);
+    ) throws IOException {
+        if(body.getFile() != null){
+            Post post = new Post();
+            post.setTitle(body.getTitle());
+            post.setUser(body.getUser());
+            post.setDescription(body.getDescription());
+            post.setImage(body.getFile());
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            post.setTimestampCreation(timestamp);
+            postRepository.save(post);
+            response.setStatus(200);
+        }
+        else{
+            response.sendError(406,"No image"); // No Acceptable? or Forbidden(403)
+        }
     }
 
 
@@ -74,7 +81,6 @@ public class PostController {
     public void updatePost(HttpServletResponse response,
                            @RequestBody UpdatePostRequestBody body) {
         Optional<Post> postOptional = postRepository.findById(body.getId());
-        System.out.println(body);
         if(!postOptional.isPresent()) {
             response.setStatus(500);
         }
