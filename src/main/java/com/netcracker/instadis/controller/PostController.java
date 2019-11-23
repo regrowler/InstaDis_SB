@@ -66,8 +66,6 @@ public class PostController {
     }
 
 
-
-    //todo: make this work
     @DeleteMapping("{id}")
     public void deletePost(HttpServletResponse response,
                            @PathVariable Long id
@@ -79,10 +77,10 @@ public class PostController {
 
     @PutMapping
     public void updatePost(HttpServletResponse response,
-                           @RequestBody UpdatePostRequestBody body) {
+                           @RequestBody UpdatePostRequestBody body) throws IOException {
         Optional<Post> postOptional = postRepository.findById(body.getId());
         if(!postOptional.isPresent()) {
-            response.setStatus(500);
+            response.sendError(404,"Post was not found");
         }
         else
         {
