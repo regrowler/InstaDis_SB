@@ -18,40 +18,73 @@ import java.util.Optional;
 @RequestMapping("/like")
 public class LikeController {
 
-        @Autowired
-        LikeRepository likeRepository;
+    private LikeRepository likeRepository;
+    private PostRepository postRepository;
+    private UserRepository userRepository;
 
-        @Autowired
-        PostRepository postRepository;
+    @Autowired
+    public LikeController(LikeRepository likeRepository, PostRepository postRepository, UserRepository userRepository) {
+        this.likeRepository = likeRepository;
+        this.postRepository = postRepository;
+        this.userRepository = userRepository;
+    }
 
-        @Autowired
-        UserRepository userRepository;
-
-
-        @PostMapping
-        public void like(HttpServletResponse response,
-                         @RequestBody UserPostLikeRequestBody body){
-            Optional<UserPostLike> optionalLike = likeRepository.findByUserLoginAndPostId(body.getUsername(), body.getPostId());
-            if(!optionalLike.isPresent())
-            {
-                Post post = postRepository.findById(body.getPostId()).get();
-                User user = userRepository.findByLogin(body.getUsername()).get();
-                UserPostLike like = new UserPostLike(user,post);
-                like.setLike(body.getIsLike());
-                response.setStatus(200);
-                likeRepository.save(like);
+    @PostMapping
+    public Integer like(HttpServletResponse response,
+                     @RequestBody UserPostLikeRequestBody body)
+    {
+        Optional<UserPostLike> optionalLike = likeRepository.findByUserLoginAndPostId(body.getUsername(), body.getPostId());
+        /*
+        (0) -> Like++
+        (1) -> Dislike++;
+        (2) -> Like--;
+        (3) -> Dislike--
+        (4) -> Like++, Dislike --
+        (5) -> Dislike--, Like++
+         */
+        if(!optionalLike.isPresent())
+        {
+            Post post = postRepository.findById(body.getPostId()).get();
+            User user = userRepository.findByLogin(body.getUsername()).get();
+            UserPostLike like = new UserPostLike(user,post);
+            like.setLike(body.getIsLike());
+            likeRepository.save(like);
+            if(body.getIsLike()){
+                return 0;
             }
-            else {
-                if (userRepository.findByLogin(body.getUsername()).isPresent()) {
-                    UserPostLike like = optionalLike.get();
-                    if (body.getIsLike() == like.isLike()) {
-                        likeRepository.deleteById(like.getId());
-                    } else {
-                        like.setLike(body.getIsLike());
-                        likeRepository.save(like);
+            else{
+                return 1;
+            }
+        }
+        else {
+            if (userRepository.findByLogin(body.getUsername()).isPresent()) {
+                UserPostLike like = optionalLike.get();
+                if (body.getIsLike() == like.isLike()) {
+                    likeRepository.deleteById(like.getId());
+
+                    if(body.getIsLike()){
+                        return 2;
+                    }
+                    else{
+                        return 3;
+                    }
+
+                } else {
+                    like.setLike(body.getIsLike());
+                    likeRepository.save(like);
+
+                    if(body.getIsLike()){
+                        return 4;
+                    }
+                    else{
+                        return 5;
                     }
                 }
+
             }
+        }
+        response.setStatus(404);
+        return -1;
     }
 }
 

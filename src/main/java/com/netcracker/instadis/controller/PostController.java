@@ -22,9 +22,12 @@ import java.sql.Timestamp;
 @RestController
 @RequestMapping("/posts")
 public class PostController {
+    private PostRepository postRepository;
 
     @Autowired
-    private PostRepository postRepository;
+    public PostController(PostRepository postRepository) {
+        this.postRepository = postRepository;
+    }
 
     @GetMapping
     public List<Post> list() {
