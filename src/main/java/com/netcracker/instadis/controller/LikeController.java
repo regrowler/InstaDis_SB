@@ -39,8 +39,8 @@ public class LikeController {
         (1) -> Dislike++;
         (2) -> Like--;
         (3) -> Dislike--
-        (4) -> Like++, Dislike --
-        (5) -> Dislike--, Like++
+        (4) -> Dislike--, Like++
+        (5) -> Dislike++, Like--
          */
         if(!optionalLike.isPresent())
         {
