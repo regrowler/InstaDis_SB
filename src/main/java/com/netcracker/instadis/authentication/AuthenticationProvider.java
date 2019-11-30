@@ -1,4 +1,4 @@
-package com.netcracker.instadis.components;
+package com.netcracker.instadis.authentication;
 
 import com.netcracker.instadis.dao.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

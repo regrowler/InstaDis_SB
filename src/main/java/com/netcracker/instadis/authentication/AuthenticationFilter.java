@@ -1,4 +1,4 @@
-package com.netcracker.instadis.components;
+package com.netcracker.instadis.authentication;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

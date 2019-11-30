@@ -1,7 +1,7 @@
 package com.netcracker.instadis;
 
-import com.netcracker.instadis.components.AuthenticationFilter;
-import com.netcracker.instadis.components.AuthenticationProvider;
+import com.netcracker.instadis.authentication.AuthenticationFilter;
+import com.netcracker.instadis.authentication.AuthenticationProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
