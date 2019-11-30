@@ -1,6 +1,9 @@
-package com.netcracker.instadis.authentication;
+package com.netcracker.instadis.security;
 
 import com.netcracker.instadis.dao.UserRepository;
+import com.netcracker.instadis.model.CustomUserDetails;
+import com.netcracker.instadis.model.User;
+import com.netcracker.instadis.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
@@ -14,11 +17,11 @@ import java.util.Optional;
 @Component
 public class AuthenticationProvider  extends AbstractUserDetailsAuthenticationProvider {
 
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Autowired
-    public AuthenticationProvider(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public AuthenticationProvider(UserService userService) {
+        this.userService = userService;
     }
 
 
@@ -30,10 +33,10 @@ public class AuthenticationProvider  extends AbstractUserDetailsAuthenticationPr
     @Override
     protected UserDetails retrieveUser(String s, UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken) throws AuthenticationException {
         Object token = usernamePasswordAuthenticationToken.getCredentials();
-        return (UserDetails) Optional
+        return Optional
                 .ofNullable(token)
                 .map(String::valueOf)
-                .flatMap(userRepository::findByToken)
-                .orElseThrow( () -> new UsernameNotFoundException("Can not find user with authentication token = " + token));
+                .flatMap(userService::findByToken)
+                .orElseThrow(() -> new UsernameNotFoundException("Can not find user with authentication token = " + token));
     }
 }

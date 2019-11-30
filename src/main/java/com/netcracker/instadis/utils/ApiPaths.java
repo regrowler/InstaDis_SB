@@ -1,4 +1,4 @@
-package com.netcracker.instadis;
+package com.netcracker.instadis.utils;
 
 public class ApiPaths {
     public static final String
@@ -10,6 +10,7 @@ public class ApiPaths {
             SIGN_IN_PATH = "/sign-in",
             SUBSCRIBE_PATH = "/subscribe",
             IS_SUBSCRIBED_PATH = "/subscribe/is",
-            GET_SUBSCRIBERS_PATH = "/subscribe/";
+            GET_SUBSCRIBERS_PATH = "/subscribe/",
+            LIKES_PATH = "/likes";
 
 }

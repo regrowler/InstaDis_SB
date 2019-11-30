@@ -1,6 +1,7 @@
 package com.netcracker.instadis.controller;
 
 
+import com.netcracker.instadis.utils.ApiPaths;
 import com.netcracker.instadis.dao.LikeRepository;
 import com.netcracker.instadis.dao.PostRepository;
 import com.netcracker.instadis.dao.UserRepository;
@@ -15,7 +16,7 @@ import java.util.Optional;
 
 @ControllerAdvice
 @RestController
-@RequestMapping("/like")
+@RequestMapping(ApiPaths.PROTECTED_PATH + ApiPaths.LIKES_PATH)
 public class LikeController {
 
     private LikeRepository likeRepository;

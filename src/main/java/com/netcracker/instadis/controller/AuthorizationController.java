@@ -1,9 +1,11 @@
 package com.netcracker.instadis.controller;
 
 
-import com.netcracker.instadis.ApiPaths;
+import com.netcracker.instadis.utils.ApiPaths;
+import com.netcracker.instadis.model.User;
 import com.netcracker.instadis.requestBodies.AuthorizationRequestBody;
 import com.netcracker.instadis.services.UserService;
+import com.netcracker.instadis.utils.ResponseByCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(ApiPaths.TOKEN_PATH)
@@ -27,26 +30,24 @@ public class AuthorizationController {
     }
 
     @PostMapping(value = ApiPaths.SIGN_IN_PATH)
-    public String getToken(HttpServletResponse response,
-                           @RequestBody AuthorizationRequestBody body) throws NoSuchAlgorithmException, IOException {
-        String token = userService.authUser(body);
-        if(StringUtils.isEmpty(token)){
-            response.sendError(404,"User was not found");
-            return "User was not found";
+    public Optional<User> authorization(HttpServletResponse response,
+                                        @RequestBody AuthorizationRequestBody body) throws NoSuchAlgorithmException, IOException {
+        System.out.println(body);
+        Optional<User> optionalUser = userService.authUser(body);
+        if(optionalUser.isPresent()) {
+            if (StringUtils.isEmpty(optionalUser.get().getToken())) {
+                response.sendError(404, "User was not found");
+            }
+            else {
+                return optionalUser;
+            }
         }
-        return token;
+        return Optional.empty();
     }
 
     @PostMapping(value = ApiPaths.SIGN_UP_PATH)
-    public void createUser(HttpServletResponse response,
-                           @RequestBody AuthorizationRequestBody body) throws NoSuchAlgorithmException, IOException {
-        if(userService.createUser(body))
-        {
-            response.setStatus(200);
-        }
-        else
-        {
-            response.sendError(403,"Username is already taken");
-        }
+    public void registration(HttpServletResponse response,
+                             @RequestBody AuthorizationRequestBody body) throws NoSuchAlgorithmException, IOException {
+        ResponseByCondition.response(response,userService.createUser(body),404,"User was not found");
     }
 }

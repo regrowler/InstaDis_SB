@@ -1,5 +1,6 @@
-package com.netcracker.instadis.authentication;
+package com.netcracker.instadis.security;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -21,7 +22,8 @@ public class AuthenticationFilter extends AbstractAuthenticationProcessingFilter
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws AuthenticationException {
-        String token = httpServletRequest.getHeader("Token");
+        System.out.println(httpServletRequest.getHeader("authorization"));
+        String token = StringUtils.removeStart(httpServletRequest.getHeader("authorization"), "Bearer").trim();
         Authentication authenticationToken = new UsernamePasswordAuthenticationToken(token, token);
         return getAuthenticationManager().authenticate(authenticationToken);
     }

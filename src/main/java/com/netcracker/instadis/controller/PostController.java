@@ -1,7 +1,7 @@
 
 package com.netcracker.instadis.controller;
 
-import com.netcracker.instadis.ApiPaths;
+import com.netcracker.instadis.utils.ApiPaths;
 import com.netcracker.instadis.model.Post;
 import com.netcracker.instadis.requestBodies.UpdatePostRequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,12 +43,17 @@ public class PostController {
         return postRepository.findAllByUserLogin(login, page);
     }
 
+    //todo: change Body
+    //      and request
     @GetMapping("{login}/{id}")
     public Optional<Post> getUserPostById(@PathVariable String login,
                                           @PathVariable Long id){
         return postRepository.findByUserLoginAndId(login,id);
     }
 
+
+    //todo: change Body
+    //      and request
     @PostMapping()
     public void createPost(HttpServletResponse response,
                            @RequestBody CreatePostRequestBody body

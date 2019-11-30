@@ -2,19 +2,13 @@ package com.netcracker.instadis.services;
 
 import com.netcracker.instadis.dao.UserRepository;
 import com.netcracker.instadis.model.User;
+import com.netcracker.instadis.model.CustomUserDetails;
 import com.netcracker.instadis.requestBodies.AuthorizationRequestBody;
 import com.netcracker.instadis.requestBodies.SubscriptionBody;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
-import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
@@ -31,6 +25,16 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    public Optional<CustomUserDetails> findByToken(String token){
+
+        Optional<User> optionalCustomUser = userRepository.findByToken(token);
+        if(optionalCustomUser.isPresent()){
+            User user = optionalCustomUser.get();
+            CustomUserDetails details = new CustomUserDetails(user);
+            return Optional.of(details);
+        }
+        return  Optional.empty();
+    }
 
     public boolean createUser(AuthorizationRequestBody body) throws NoSuchAlgorithmException {
         Optional<User> optionalUser = userRepository.findByLogin(body.getLogin());
@@ -42,16 +46,15 @@ public class UserService {
         return false;
     }
 
-    public String authUser(AuthorizationRequestBody body) throws NoSuchAlgorithmException {
+    public Optional<User> authUser(AuthorizationRequestBody body) throws NoSuchAlgorithmException {
         Optional<User> optionalUser = userRepository.findByLoginAndPassword(body.getLogin(), md5(body.getPassword()));
         if (optionalUser.isPresent()) {
             String token = UUID.randomUUID().toString();
             User user = optionalUser.get();
             user.setToken(token);
             userRepository.save(user);
-            return token;
         }
-        return StringUtils.EMPTY;
+        return optionalUser;
     }
 
     public boolean subscribeToUser(SubscriptionBody body){
