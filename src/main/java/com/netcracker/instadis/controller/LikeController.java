@@ -31,7 +31,7 @@ public class LikeController {
 
     @PostMapping
     public Integer like(HttpServletResponse response,
-                     @RequestBody UserPostLikeRequestBody body)
+                        @RequestBody UserPostLikeRequestBody body)
     {
         Optional<UserPostLike> optionalLike = likeRepository.findByUserLoginAndPostId(body.getUsername(), body.getPostId());
         /*

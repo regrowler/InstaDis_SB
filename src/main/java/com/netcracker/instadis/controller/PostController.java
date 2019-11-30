@@ -1,6 +1,7 @@
 
 package com.netcracker.instadis.controller;
 
+import com.netcracker.instadis.ApiPaths;
 import com.netcracker.instadis.model.Post;
 import com.netcracker.instadis.requestBodies.UpdatePostRequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ import java.sql.Timestamp;
 
 @ControllerAdvice
 @RestController
-@RequestMapping("/posts")
+@RequestMapping(ApiPaths.PROTECTED_PATH + ApiPaths.POST_PATH)
 public class PostController {
     private PostRepository postRepository;
 
