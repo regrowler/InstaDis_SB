@@ -34,7 +34,7 @@ public class LikeController {
     public Integer like(HttpServletResponse response,
                         @RequestBody UserPostLikeRequestBody body)
     {
-        Optional<UserPostLike> optionalLike = likeRepository.findByUserLoginAndPostId(body.getUsername(), body.getPostId());
+        Optional<UserPostLike> optionalLike = likeRepository.findByUserTokenAndPostId(body.getToken(), body.getPostId());
         /*
         (0) -> Like++
         (1) -> Dislike++;
@@ -46,7 +46,7 @@ public class LikeController {
         if(!optionalLike.isPresent())
         {
             Post post = postRepository.findById(body.getPostId()).get();
-            User user = userRepository.findByLogin(body.getUsername()).get();
+            User user = userRepository.findByToken(body.getToken()).get();
             UserPostLike like = new UserPostLike(user,post);
             like.setLike(body.getIsLike());
             likeRepository.save(like);
@@ -58,7 +58,7 @@ public class LikeController {
             }
         }
         else {
-            if (userRepository.findByLogin(body.getUsername()).isPresent()) {
+            if (userRepository.findByToken(body.getToken()).isPresent()) {
                 UserPostLike like = optionalLike.get();
                 if (body.getIsLike() == like.isLike()) {
                     likeRepository.deleteById(like.getId());

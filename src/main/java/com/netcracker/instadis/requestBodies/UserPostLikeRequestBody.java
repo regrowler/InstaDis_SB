@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserPostLikeRequestBody {
-    String username;
+    String token;
     Long postId;
     Boolean isLike;
 }
