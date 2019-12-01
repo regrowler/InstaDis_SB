@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdatePostRequestBody {
     private Long id;
+    private String token;
     private String title;
     private String description;
 }

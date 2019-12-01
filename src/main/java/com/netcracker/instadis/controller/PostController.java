@@ -1,6 +1,8 @@
 
 package com.netcracker.instadis.controller;
 
+import com.netcracker.instadis.model.CustomUserDetails;
+import com.netcracker.instadis.services.UserService;
 import com.netcracker.instadis.utils.ApiPaths;
 import com.netcracker.instadis.model.Post;
 import com.netcracker.instadis.requestBodies.UpdatePostRequestBody;
@@ -24,10 +26,12 @@ import java.sql.Timestamp;
 @RequestMapping(ApiPaths.PROTECTED_PATH + ApiPaths.POST_PATH)
 public class PostController {
     private PostRepository postRepository;
+    private UserService userService;
 
     @Autowired
-    public PostController(PostRepository postRepository) {
+    public PostController(PostRepository postRepository, UserService userService) {
         this.postRepository = postRepository;
+        this.userService = userService;
     }
 
     @GetMapping
@@ -43,31 +47,34 @@ public class PostController {
         return postRepository.findAllByUserLogin(login, page);
     }
 
-    //todo: change Body
-    //      and request
-    @GetMapping("{login}/{id}")
-    public Optional<Post> getUserPostById(@PathVariable String login,
+
+    @GetMapping("{token}/{id}")
+    public Optional<Post> getUserPostById(@PathVariable String token,
                                           @PathVariable Long id){
-        return postRepository.findByUserLoginAndId(login,id);
+        return postRepository.findByUserTokenAndId(token,id);
     }
 
 
-    //todo: change Body
-    //      and request
     @PostMapping()
     public void createPost(HttpServletResponse response,
                            @RequestBody CreatePostRequestBody body
     ) throws IOException {
         if(body.getFile() != null){
-            Post post = new Post();
-            post.setTitle(body.getTitle());
-            post.setUser(body.getUser());
-            post.setDescription(body.getDescription());
-            post.setImage(body.getFile());
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            post.setTimestampCreation(timestamp);
-            postRepository.save(post);
-            response.setStatus(200);
+            Optional<CustomUserDetails> customUserDetails = userService.findByToken(body.getToken());
+            if(customUserDetails.isPresent()) {
+                Post post = new Post();
+                post.setTitle(body.getTitle());
+                post.setUser(customUserDetails.get().getUser());
+                post.setDescription(body.getDescription());
+                post.setImage(body.getFile());
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                post.setTimestampCreation(timestamp);
+                postRepository.save(post);
+                response.setStatus(200);
+            }
+            else{
+                response.sendError(404,"User was not found");
+            }
         }
         else{
             response.sendError(406,"No image"); // No Acceptable? or Forbidden(403)
@@ -75,19 +82,26 @@ public class PostController {
     }
 
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("{token}/{id}")
     public void deletePost(HttpServletResponse response,
+                           @PathVariable String token,
                            @PathVariable Long id
-    ) {
-        response.setStatus(200);
-        postRepository.deleteById(id);
+    ) throws IOException {
+        Optional<Post> byUserTokenAndId = postRepository.findByUserTokenAndId(token, id);
+        if(byUserTokenAndId.isPresent()) {
+            response.setStatus(200);
+            postRepository.deleteById(id);
+        }
+        else {
+            response.sendError(404,"User doesnt have such post");
+        }
     }
 
 
     @PutMapping
     public void updatePost(HttpServletResponse response,
                            @RequestBody UpdatePostRequestBody body) throws IOException {
-        Optional<Post> postOptional = postRepository.findById(body.getId());
+        Optional<Post> postOptional = postRepository.findByUserTokenAndId(body.getToken(),body.getId());
         if(!postOptional.isPresent()) {
             response.sendError(404,"Post was not found");
         }
