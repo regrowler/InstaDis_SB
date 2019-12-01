@@ -26,7 +26,6 @@ public class UserService {
     }
 
     public Optional<CustomUserDetails> findByToken(String token){
-
         Optional<User> optionalCustomUser = userRepository.findByToken(token);
         if(optionalCustomUser.isPresent()){
             User user = optionalCustomUser.get();
@@ -59,7 +58,7 @@ public class UserService {
 
     public boolean subscribeToUser(SubscriptionBody body){
         Optional<User> optionalSubscribe = isUserRegistered(body.getSubscribe());
-        Optional<User> optionalUser = isUserRegistered(body.getUsername());
+        Optional<User> optionalUser = userRepository.findByToken(body.getToken());
         if (optionalSubscribe.isPresent() && optionalUser.isPresent()) {
             User subscribe = optionalSubscribe.get();
             User user = optionalUser.get();
@@ -72,7 +71,7 @@ public class UserService {
 
     public boolean isSubscribed(SubscriptionBody body) {
         Optional<User> optionalSubscribe = isUserRegistered(body.getSubscribe());
-        Optional<User> optionalUser = isUserRegistered(body.getUsername());
+        Optional<User> optionalUser = userRepository.findByToken(body.getToken());
         if(optionalSubscribe.isPresent() && optionalUser.isPresent()) {
             User subscribe = optionalSubscribe.get();
             User user = optionalUser.get();
