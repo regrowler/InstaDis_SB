@@ -62,13 +62,8 @@ public class PostController {
         if(body.getFile() != null){
             Optional<CustomUserDetails> customUserDetails = userService.findByToken(body.getToken());
             if(customUserDetails.isPresent()) {
-                Post post = new Post();
-                post.setTitle(body.getTitle());
-                post.setUser(customUserDetails.get().getUser());
-                post.setDescription(body.getDescription());
-                post.setImage(body.getFile());
-                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-                post.setTimestampCreation(timestamp);
+                Post post = new Post(body.getTitle(),body.getFile(),body.getDescription(),
+                                     new Timestamp(System.currentTimeMillis()),customUserDetails.get().getUser());
                 postRepository.save(post);
                 response.setStatus(200);
             }
