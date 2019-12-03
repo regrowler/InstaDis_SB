@@ -3,7 +3,6 @@ package com.netcracker.instadis.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,6 +17,8 @@ public class User {
     @Column(unique = true)
     private String login;
     private String password;
+    private String token;
+
     @Version
     @Column(name = "VERSION")
     private long version;
@@ -37,7 +38,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = {CascadeType.REFRESH, CascadeType.REMOVE}, fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnore
     private Set<UserPostLike> likes = new HashSet<>();
-
 
     public User() {
     }
@@ -97,4 +97,8 @@ public class User {
     public void setLikes(Set<UserPostLike> likes) {
         this.likes = likes;
     }
+
+    public String getToken() { return token; }
+
+    public void setToken(String token) { this.token = token; }
 }

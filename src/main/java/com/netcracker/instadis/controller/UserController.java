@@ -1,156 +1,50 @@
 package com.netcracker.instadis.controller;
 
-import com.netcracker.instadis.dao.UserRepository;
+import com.netcracker.instadis.utils.ApiPaths;
+import com.netcracker.instadis.model.CustomUserDetails;
 import com.netcracker.instadis.model.User;
-import com.netcracker.instadis.requestBodies.AuthorizationRequestBody;
 import com.netcracker.instadis.requestBodies.SubscriptionBody;
+import com.netcracker.instadis.services.UserService;
+import com.netcracker.instadis.utils.ResponseByCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping(ApiPaths.PROTECTED_PATH + ApiPaths.USER_PATH)
 public class UserController {
-
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Autowired
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserController(UserService service) {
+        this.userService = service;
     }
 
-    //for tests only
-    @GetMapping
-    public List<User> list(HttpServletResponse response) {
-        response.setStatus(200);
-        return userRepository.findAll();
+    @GetMapping(value = "{token}")
+    public Optional<User> getUserByToken(@PathVariable String token){
+        Optional<CustomUserDetails> optionalUser = userService.findByToken(token);
+        return optionalUser.map(CustomUserDetails::getUser);
     }
 
-    //Registration
-    @PostMapping(value = "/sign-up")
-    public void createUser(HttpServletResponse response,
-                             @RequestBody AuthorizationRequestBody body) throws NoSuchAlgorithmException, IOException {
-        Optional<User> optionalUser = userRepository.findByLogin(body.getLogin());
-        if (!optionalUser.isPresent()) {
-            User user = new User(body.getLogin(),hashMDA5(body.getPassword()));
-            userRepository.save(user);
-            response.setStatus(200);
-        } else {
-            response.sendError(403,"Username is already taken");
-        }
-    }
-
-    @PostMapping(value = "/sign-in")
-    public Optional<User> authUser(HttpServletResponse response,
-                           @RequestBody AuthorizationRequestBody body) throws NoSuchAlgorithmException, IOException {
-        Optional<User> optionalUser = userRepository.findByLoginAndPassword(body.getLogin(),hashMDA5(body.getPassword()));
-        if (optionalUser.isPresent()) {
-            response.setStatus(200);
-        } else {
-            response.sendError(404,"User was not found");
-        }
-        return optionalUser;
-    }
-
-
-    @PostMapping(value = "/subscribe")
+    @PostMapping(value = ApiPaths.SUBSCRIBE_PATH)
     public void subscribeToUser(HttpServletResponse response,
                                 @RequestBody SubscriptionBody body) throws IOException {
-        Optional<User> optionalSubscribe = isUserRegistered(body.getSubscribe());
-        Optional<User> optionalUser = isUserRegistered(body.getUsername());
-        if (optionalSubscribe.isPresent() && optionalUser.isPresent()) {
-            User subscribe = optionalSubscribe.get();
-            User user = optionalUser.get();
-            user.getSubscriptions().add(subscribe);
-            userRepository.save(user);
-            response.setStatus(200);
-        } else {
-            response.sendError(404,"User was not found");
-        }
+        ResponseByCondition.response(response,userService.subscribeToUser(body),404,"User was not found");
     }
 
-    @PostMapping(value = "/subscribe/is")
-    public boolean isSubscribed(HttpServletResponse response,
-                                @RequestBody SubscriptionBody body) throws IOException {
-        Optional<User> optionalSubscribe = isUserRegistered(body.getSubscribe());
-        Optional<User> optionalUser = isUserRegistered(body.getUsername());
-        if(optionalSubscribe.isPresent() && optionalUser.isPresent()) {
-            User subscribe = optionalSubscribe.get();
-            User user = optionalUser.get();
-            return user.getSubscriptions().contains(subscribe);
-        }
-        else{
-            response.sendError(404,"User was not found");
-            return false;
-        }
+    @PostMapping(value = ApiPaths.IS_SUBSCRIBED_PATH)
+    public boolean isSubscribed(@RequestBody SubscriptionBody body) {
+        return userService.isSubscribed(body);
     }
 
-    @GetMapping(value = "/subscribe/{username}")
+    @GetMapping(value = ApiPaths.GET_SUBSCRIBERS_PATH + "{username}")
     public Optional<Set<User>> getSubscribers(HttpServletResponse response,
-                               @PathVariable String username) throws IOException {
-        Optional<User> optionalUser = isUserRegistered(username);
-        if (optionalUser.isPresent()){
-            response.setStatus(200);
-            return optionalUser.map(User::getSubscriptions);
-        }
-        else {
-            response.sendError(404,"User was not found");
-            return Optional.empty();
-        }
+                                              @PathVariable String username) throws IOException {
+        Optional<Set<User>> subscribers = userService.getSubscribers(username);
+        ResponseByCondition.response(response,subscribers.isPresent(),404,"User was not found");
+        return subscribers;
     }
-
-
-
-
-    @DeleteMapping()
-    public void deleteUser(HttpServletResponse response,
-                           @RequestBody AuthorizationRequestBody body) throws NoSuchAlgorithmException, IOException {
-        Optional<User> optionalUser = userRepository.findByLoginAndPassword(body.getLogin(),hashMDA5(body.getPassword()));
-        if (optionalUser.isPresent()) {
-            response.setStatus(200);
-            userRepository.deleteByLogin(body.getLogin());
-        }
-        else{
-            response.sendError(404,"User was not found");
-        }
-    }
-
-    @PatchMapping("{id}")
-    public void updateUser(HttpServletResponse response,
-                           @PathVariable Long id,
-                           @RequestParam String login,
-                           @RequestParam String oldPassword,
-                           @RequestParam String password) throws NoSuchAlgorithmException, IOException {
-        Optional<User> optionalUser = userRepository.findByLoginAndPassword(login,hashMDA5(oldPassword));
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            user.setLogin(login);
-            user.setPassword(password);
-            userRepository.save(user);
-            response.setStatus(200);
-        }
-        else{
-            response.sendError(404,"User was not found");
-        }
-    }
-
-    private Optional<User> isUserRegistered(String login){
-        return userRepository.findByLogin(login);
-    }
-
-
-    private String hashMDA5(String input) throws NoSuchAlgorithmException {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update(input.getBytes());
-            return DatatypeConverter.printHexBinary(md.digest()).toUpperCase();
-    }
-
 }

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreatePostRequestBody {
     private String title;
-    private User user;
+    private String token;
     private String description;
     private String file;
 }

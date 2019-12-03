@@ -10,10 +10,8 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User,Long> {
 
     List<User> findAll();
-    void deleteById(Long id);
-    void deleteByLogin(String login);
-    Optional<User> findById(Integer id);
     Optional<User> findByLogin(String login);
     Optional<User> findByLoginAndPassword(String login, String password);
+    Optional<User> findByToken(String token);
     User save(User user);
 }

@@ -9,6 +9,6 @@ import java.util.Optional;
 public interface LikeRepository extends JpaRepository<UserPostLike, Long> {
     List<UserPostLike> findAll();
     UserPostLike save(UserPostLike like);
-    Optional<UserPostLike> findByUserLoginAndPostId(String login, Long id);
+    Optional<UserPostLike> findByUserTokenAndPostId(String token, Long id);
     void deleteById(Long id);
 }
