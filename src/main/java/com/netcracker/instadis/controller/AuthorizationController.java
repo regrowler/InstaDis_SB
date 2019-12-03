@@ -32,7 +32,6 @@ public class AuthorizationController {
     @PostMapping(value = ApiPaths.SIGN_IN_PATH)
     public Optional<User> authorization(HttpServletResponse response,
                                         @RequestBody AuthorizationRequestBody body) throws NoSuchAlgorithmException, IOException {
-        System.out.println(body);
         Optional<User> optionalUser = userService.authUser(body);
         if(optionalUser.isPresent()) {
             if (StringUtils.isEmpty(optionalUser.get().getToken())) {
